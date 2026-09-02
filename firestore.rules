@@ -1,0 +1,62 @@
+rules_version = '2';
+
+// Otorisasi Karya Tracker (PRD bagian 9 — Security & Privacy).
+// Sumber kebenaran permission ada di sini, bukan di UI.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Role admin dibawa lewat custom claim yang di-set Cloud Function saat invite diterima.
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.role == 'admin';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function validSubmission(data) {
+      return data.keys().hasAll(['userId', 'name', 'origin', 'socialAccountUrl', 'linkUrl'])
+        && data.userId is string
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 80
+        && data.origin is string && data.origin.size() > 0 && data.origin.size() <= 80
+        && data.socialAccountUrl is string && data.socialAccountUrl.matches('https?://.*')
+        && data.linkUrl is string && data.linkUrl.matches('https?://.*');
+    }
+
+    match /users/{userId} {
+      // Nama & asal tampil di leaderboard, jadi profil bisa dibaca sesama user yang login.
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) && request.resource.data.role == 'user';
+      // User boleh memperbarui profilnya sendiri tapi tidak boleh menaikkan rolenya.
+      allow update: if isOwner(userId) && request.resource.data.role == resource.data.role;
+      // Role hanya diubah oleh Cloud Function (Admin SDK) — bukan dari klien.
+      allow delete: if false;
+    }
+
+    match /submissions/{submissionId} {
+      // Histori submission hanya terlihat oleh pemiliknya dan admin (Open Question #3).
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isOwner(request.resource.data.userId)
+        && validSubmission(request.resource.data);
+      // Admin tidak boleh mengedit isi submission siapa pun.
+      allow update: if isOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId
+        && validSubmission(request.resource.data);
+      allow delete: if isAdmin() || isOwner(resource.data.userId);
+    }
+
+    match /adminInvites/{inviteId} {
+      allow read: if isAdmin();
+      // Invite dibuat lewat callable function agar email terkirim dan claim ter-set.
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
