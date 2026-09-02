@@ -29,6 +29,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
   type DocumentData,
   type Firestore,
   type QueryDocumentSnapshot,
@@ -36,6 +37,7 @@ import {
 import { addDays, formatISO } from 'date-fns'
 import type { AdminInvite, AppUser, LeaderboardEntry, Submission } from '@/types'
 import type { SubmissionInput } from '@/lib/validators/submission'
+import { buildLeaderboard } from '@/lib/selectors'
 import { AppError, ERROR_COPY, toAppError, type DataAdapter } from './contract'
 import { firebaseConfig } from './config'
 
@@ -274,6 +276,35 @@ export class FirebaseAdapter implements DataAdapter {
       // Tie-break: yang lebih dulu mencapai total tersebut ada di atas (FR-06).
       .sort((a, b) => b.total - a.total || a.reachedAt.localeCompare(b.reachedAt))
       .map((entry, index) => ({ ...entry, rank: index + 1 }))
+  }
+
+  async recomputeLeaderboardAggregates(actor: AppUser): Promise<number> {
+    if (actor.role !== 'admin') {
+      throw new AppError('permission-denied', ERROR_COPY['permission-denied'])
+    }
+
+    try {
+      const [submissions, users] = await Promise.all([this.listAllSubmissions(), this.listUsers()])
+      const entries = buildLeaderboard(submissions, users)
+
+      const batch = writeBatch(this.db)
+      for (const entry of entries) {
+        batch.set(
+          doc(this.db, USERS, entry.userId),
+          {
+            totalKarya: entry.total,
+            origin: entry.origin,
+            lastReachedAt: Timestamp.fromDate(new Date(entry.reachedAt)),
+          },
+          { merge: true },
+        )
+      }
+      if (entries.length > 0) await batch.commit()
+
+      return entries.length
+    } catch (error) {
+      throw toAppError(error)
+    }
   }
 
   async listSubmissionsByUser(userId: string) {

@@ -86,6 +86,15 @@ export interface DataAdapter {
    */
   listLeaderboard(): Promise<LeaderboardEntry[]>
 
+  /**
+   * Backfill satu kali: hitung ulang totalKarya/origin/lastReachedAt tiap user dari
+   * seluruh koleksi submissions, lalu tulis ke dokumen users masing-masing. Dipakai
+   * admin lewat halaman Admin Management untuk menyamakan agregat leaderboard dengan
+   * submission yang sudah ada sebelum totalKarya mulai dijaga otomatis di
+   * createSubmission/deleteSubmission.
+   */
+  recomputeLeaderboardAggregates(actor: AppUser): Promise<number>
+
   listSubmissionsByUser(userId: string): Promise<Submission[]>
   listAllSubmissions(): Promise<Submission[]>
   createSubmission(user: AppUser, input: SubmissionInput): Promise<Submission>

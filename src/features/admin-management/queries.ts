@@ -31,3 +31,18 @@ export function useRevokeInvite() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.invites }),
   })
 }
+
+/**
+ * Backfill satu kali untuk submission yang dibuat sebelum totalKarya mulai dijaga
+ * otomatis (lihat createSubmission/deleteSubmission di firebase-adapter.ts).
+ */
+export function useRecomputeLeaderboard(actor: AppUser | null) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => getAdapter().recomputeLeaderboardAggregates(actor as AppUser),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.leaderboard })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.users })
+    },
+  })
+}

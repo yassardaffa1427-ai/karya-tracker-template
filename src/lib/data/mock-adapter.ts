@@ -180,6 +180,13 @@ export class MockAdapter implements DataAdapter {
     return buildLeaderboard(db.submissions, db.users)
   }
 
+  async recomputeLeaderboardAggregates(): Promise<number> {
+    // Mock selalu menghitung leaderboard on-the-fly dari array in-memory (lihat
+    // listLeaderboard di atas) — tidak ada agregat tersimpan yang perlu di-backfill.
+    await wait()
+    return buildLeaderboard(this.db.submissions, this.db.users).length
+  }
+
   async listSubmissionsByUser(userId: string) {
     await wait()
     return this.db.submissions

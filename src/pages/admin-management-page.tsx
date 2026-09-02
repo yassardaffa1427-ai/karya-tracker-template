@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { MailPlus, ShieldCheck, Trash2, UserPlus } from 'lucide-react'
+import { MailPlus, RefreshCw, ShieldCheck, Trash2, Trophy, UserPlus } from 'lucide-react'
 import type { AdminInvite } from '@/types'
 import { AppError } from '@/lib/data'
 import { formatShortDate } from '@/lib/dates'
@@ -12,6 +12,7 @@ import { useUsers } from '@/features/submissions/queries'
 import {
   useCreateInvite,
   useInvites,
+  useRecomputeLeaderboard,
   useRevokeInvite,
 } from '@/features/admin-management/queries'
 import { AppShell, PageHeader } from '@/components/shared/app-shell'
@@ -40,6 +41,7 @@ export function AdminManagementPage() {
   const users = useUsers()
   const invites = useInvites()
   const revokeMutation = useRevokeInvite()
+  const recomputeMutation = useRecomputeLeaderboard(user)
 
   const [inviteOpen, setInviteOpen] = useState(false)
   const [pendingRevoke, setPendingRevoke] = useState<AdminInvite | null>(null)
@@ -58,6 +60,15 @@ export function AdminManagementPage() {
       toast.error(error instanceof AppError ? error.message : 'Gagal mencabut undangan.')
     } finally {
       setPendingRevoke(null)
+    }
+  }
+
+  async function handleRecompute() {
+    try {
+      const count = await recomputeMutation.mutateAsync()
+      toast.success(`Leaderboard disinkronkan ulang untuk ${count} kontributor.`)
+    } catch (error) {
+      toast.error(error instanceof AppError ? error.message : 'Gagal menghitung ulang leaderboard.')
     }
   }
 
@@ -170,6 +181,26 @@ export function AdminManagementPage() {
           )}
         </section>
       </div>
+
+      <section className="fin-card mt-4 flex flex-wrap items-center justify-between gap-4 p-5">
+        <div className="flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-overlay text-brand-600">
+            <Trophy className="h-[18px] w-[18px]" aria-hidden />
+          </span>
+          <div>
+            <h2 className="text-[14px] font-semibold text-ink">Recompute leaderboard</h2>
+            <p className="mt-0.5 max-w-md text-[13px] text-ink-muted">
+              Hitung ulang total karya semua kontributor dari histori submission. Perlu
+              dijalankan sekali kalau ada karya lama yang belum masuk leaderboard — submission
+              baru selalu terhitung otomatis tanpa ini.
+            </p>
+          </div>
+        </div>
+        <Button variant="secondary" onClick={handleRecompute} loading={recomputeMutation.isPending}>
+          <RefreshCw className="h-4 w-4" aria-hidden />
+          Recompute leaderboard
+        </Button>
+      </section>
 
       <InviteModal open={inviteOpen} onOpenChange={setInviteOpen} />
 

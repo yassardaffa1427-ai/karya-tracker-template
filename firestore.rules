@@ -47,13 +47,16 @@ service cloud.firestore {
       // karya sendiri — leaderboard dihitung di klien, tanpa Cloud Functions) tapi tidak
       // boleh menaikkan rolenya sendiri.
       // Admin boleh: (a) menaikkan role user LAIN jadi admin (fitur "Undang admin"),
-      // (b) mengoreksi totalKarya user LAIN saat menghapus submission milik orang lain.
+      // (b) mengoreksi totalKarya/origin/lastReachedAt user LAIN — dipakai saat admin
+      // menghapus submission milik orang lain, dan saat "Recompute leaderboard"
+      // (backfill agregat untuk submission yang dibuat sebelum totalKarya ada).
       allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role)
         || (isAdmin()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
           && request.resource.data.role == 'admin')
         || (isAdmin()
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalKarya']));
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['totalKarya', 'origin', 'lastReachedAt']));
       allow delete: if false;
     }
 
