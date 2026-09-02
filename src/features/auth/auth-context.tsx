@@ -41,8 +41,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       initializing,
       isAdmin: user?.role === 'admin',
       signIn: (email, password) => adapter.signIn(email, password),
-      register: (name, email, password) => adapter.register(name, email, password),
-      signInWithGoogle: () => adapter.signInWithGoogle(),
+      // Sinkronkan state langsung dari hasil register/Google, bukan cuma mengandalkan
+      // listener onAuthChange — listener bisa sempat menyimpan profil dengan nama
+      // kosong lebih dulu akibat race dengan pemanggilan ensureProfile di adapter.
+      register: async (name, email, password) => {
+        const nextUser = await adapter.register(name, email, password)
+        setUser(nextUser)
+        return nextUser
+      },
+      signInWithGoogle: async () => {
+        const nextUser = await adapter.signInWithGoogle()
+        setUser(nextUser)
+        return nextUser
+      },
       signOut,
       sendPasswordReset: (email) => adapter.sendPasswordReset(email),
     }),

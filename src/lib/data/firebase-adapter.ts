@@ -198,9 +198,17 @@ export class FirebaseAdapter implements DataAdapter {
 
   async register(name: string, email: string, password: string) {
     try {
+      const trimmedName = name.trim()
       const credential = await createUserWithEmailAndPassword(this.auth, email.trim(), password)
-      await updateProfile(credential.user, { displayName: name.trim() })
-      return await this.ensureProfile(credential.user, name.trim())
+      await updateProfile(credential.user, { displayName: trimmedName })
+      const profile = await this.ensureProfile(credential.user, trimmedName)
+      // ensureProfile() juga dipanggil oleh listener onAuthChange (tanpa fallbackName)
+      // yang bisa menang race dan membuat dokumen profil lebih dulu dengan nama kosong.
+      // Pastikan nama yang benar-benar diketik user selalu jadi nilai akhir yang tersimpan.
+      if (profile.name !== trimmedName) {
+        await setDoc(doc(this.db, USERS, credential.user.uid), { name: trimmedName }, { merge: true })
+      }
+      return { ...profile, name: trimmedName }
     } catch (error) {
       throw toAppError(error)
     }
