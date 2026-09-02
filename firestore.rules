@@ -9,9 +9,15 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Role admin dibawa lewat custom claim yang di-set Cloud Function saat invite diterima.
+    // Admin ditentukan dari field role di dokumen users/{uid} milik pemanggil sendiri.
+    // Custom claim (kalau ada, lewat Cloud Function di masa depan) dicek lebih dulu
+    // supaya lebih murah — tapi tidak wajib, karena Cloud Functions saat ini ditunda
+    // dan "Undang admin" menulis role langsung ke Firestore dari klien.
     function isAdmin() {
-      return isSignedIn() && request.auth.token.role == 'admin';
+      return isSignedIn() && (
+        request.auth.token.role == 'admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
     }
 
     function isOwner(userId) {
@@ -37,13 +43,17 @@ service cloud.firestore {
       // Nama & asal tampil di leaderboard, jadi profil bisa dibaca sesama user yang login.
       allow read: if isSignedIn();
       allow create: if isOwner(userId) && request.resource.data.role == 'user';
-      // User boleh memperbarui profilnya sendiri tapi tidak boleh menaikkan rolenya sendiri.
-      // Admin boleh menaikkan role user LAIN jadi admin (dipakai fitur "Undang admin"
-      // saat emailnya sudah punya akun) — hanya field role yang boleh berubah lewat jalur ini.
+      // User boleh memperbarui profilnya sendiri (termasuk totalKarya saat submit/hapus
+      // karya sendiri — leaderboard dihitung di klien, tanpa Cloud Functions) tapi tidak
+      // boleh menaikkan rolenya sendiri.
+      // Admin boleh: (a) menaikkan role user LAIN jadi admin (fitur "Undang admin"),
+      // (b) mengoreksi totalKarya user LAIN saat menghapus submission milik orang lain.
       allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role)
         || (isAdmin()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
-          && request.resource.data.role == 'admin');
+          && request.resource.data.role == 'admin')
+        || (isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalKarya']));
       allow delete: if false;
     }
 

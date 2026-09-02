@@ -22,6 +22,7 @@ import {
   getDoc,
   getDocs,
   getFirestore,
+  increment,
   orderBy,
   query,
   serverTimestamp,
@@ -302,6 +303,13 @@ export class FirebaseAdapter implements DataAdapter {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })
+      // Leaderboard (FR-06) dihitung dari agregat totalKarya di dokumen user sendiri —
+      // dijaga di client, bukan Cloud Function, karena Cloud Functions ditunda (Spark plan).
+      await setDoc(
+        doc(this.db, USERS, user.id),
+        { totalKarya: increment(1), origin: input.origin, lastReachedAt: serverTimestamp() },
+        { merge: true },
+      )
       const now = new Date().toISOString()
       return { id: reference.id, userId: user.id, ...input, createdAt: now, updatedAt: now }
     } catch (error) {
@@ -334,11 +342,15 @@ export class FirebaseAdapter implements DataAdapter {
     const reference = doc(this.db, SUBMISSIONS, submissionId)
     const snapshot = await getDoc(reference)
     if (!snapshot.exists()) throw new AppError('not-found', ERROR_COPY['not-found'])
-    if (snapshot.data().userId !== actor.id && actor.role !== 'admin') {
+    const ownerId = snapshot.data().userId as string
+    if (ownerId !== actor.id && actor.role !== 'admin') {
       throw new AppError('permission-denied', ERROR_COPY['permission-denied'])
     }
     try {
       await deleteDoc(reference)
+      // Koreksi totalKarya pemilik ASLI submission — bukan actor, supaya benar juga
+      // saat admin yang menghapus milik orang lain (izin rules: lihat firestore.rules).
+      await setDoc(doc(this.db, USERS, ownerId), { totalKarya: increment(-1) }, { merge: true })
     } catch (error) {
       throw toAppError(error)
     }
