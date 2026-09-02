@@ -72,9 +72,15 @@ Otorisasi sebenarnya tetap di server: `firestore.rules`.
 ### Leaderboard
 
 User biasa tidak boleh membaca submission milik orang lain, jadi ranking **tidak** dihitung
-dari koleksi `submissions` di klien. Cloud Function `onSubmissionCreated`/`onSubmissionDeleted`
-memelihara agregat `totalKarya` + `lastReachedAt` di dokumen user, dan itulah yang dibaca
-`listLeaderboard()`. Di mode demo, agregat yang sama dihitung langsung dari seed.
+dari koleksi `submissions` di klien. `createSubmission`/`deleteSubmission` di
+`firebase-adapter.ts` menaikkan/menurunkan agregat `totalKarya` di dokumen `users/{uid}`
+langsung dari klien (di-*guard* `firestore.rules`: owner boleh ubah dokumennya sendiri, admin
+boleh koreksi `totalKarya` user lain saat menghapus submission orang lain), dan itulah yang
+dibaca `listLeaderboard()`. Sengaja **tidak** lewat Cloud Function supaya leaderboard tetap
+jalan penuh di plan Spark (gratis) — lihat komentar di
+`functions/src/triggers/on-submission-write.ts` kalau nanti mau mengaktifkan Blaze, supaya
+tidak menambah balik logika yang sama di sana (double-count). Di mode demo, agregat yang sama
+dihitung langsung dari seed.
 
 Tie-break sesuai FR-06: total sama → yang lebih dulu mencapai total itu ada di atas.
 
