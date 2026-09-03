@@ -10,6 +10,7 @@ import { loginSchema, registerSchema, resetSchema, type LoginInput, type Registe
 import { Button } from '@/components/ui/button'
 import { Field, Input } from '@/components/ui/field'
 import { Modal } from '@/components/ui/modal'
+import { Footer } from '@/components/shared/footer'
 import { track } from '@/lib/analytics'
 
 const HIGHLIGHTS = [
@@ -74,10 +75,11 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
         <p className="relative text-[12px] text-slate-500">Karya Tracker v1.0 — Production</p>
       </section>
 
-      <section className="flex items-center justify-center bg-surface px-5 py-12 sm:px-10">
+      <section className="flex flex-col items-center justify-center bg-surface px-5 py-12 sm:px-10">
         <div className="w-full max-w-[400px]">
           {isLogin ? <LoginForm /> : <RegisterForm />}
         </div>
+        <Footer />
       </section>
     </div>
   )

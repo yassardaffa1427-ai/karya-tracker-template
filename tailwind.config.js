@@ -5,21 +5,21 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#F5F3FF',
-          100: '#ECE9FE',
-          200: '#E0DEFC',
-          300: '#C7C2F9',
-          400: '#8B7CF6',
-          500: '#6352F3',
-          600: '#5346E0',
-          700: '#432BB3',
-          800: '#3C2BB8',
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
+          500: '#3B82F6',
+          600: '#2563EB',
+          700: '#1D4ED8',
+          800: '#1E40AF',
         },
         darkbg: {
           main: '#181925',
           card: '#1E1F2E',
-          panel: '#3B3980',
-          active: '#47449B',
+          panel: '#1E3A8A',
+          active: '#2563EB',
         },
         surface: {
           DEFAULT: '#F4F5FA',

@@ -22,6 +22,7 @@ import { isMockMode } from '@/lib/data'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { Footer } from '@/components/shared/footer'
 import { formatDateTime } from '@/lib/dates'
 
 interface NavItem {
@@ -234,7 +235,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      <main className="mx-auto max-w-[1320px] px-3 pb-24 pt-3 sm:px-6 sm:pb-16">{children}</main>
+      <main className="mx-auto max-w-[1320px] px-3 pb-24 pt-3 sm:px-6 sm:pb-16">
+        {children}
+        <Footer />
+      </main>
 
       <nav
         aria-label="Navigasi bawah"
