@@ -107,6 +107,7 @@ email lewat Cloud Functions). Should Have (empty state + loading skeleton) dan C
 | Shadcn UI via CLI | Primitif tulis-tangan di atas Radix (`Dialog`, `Tooltip`) | Menghindari generator; API dan token stylingnya tetap setara dan seluruhnya memakai token FINNOVA. |
 | TanStack Table | Tabel HTML biasa | Tabel responden hanya 4 kolom tanpa sorting/virtualisasi; satu dependensi lagi tidak terbayar. |
 | Sentry | `console.error` di ErrorBoundary | Butuh DSN; titik pasangnya sudah ditandai di `src/app/providers.tsx`. |
+| Role admin flat tanpa hierarki (PRD bagian 8 & FR-09) | Satu "admin utama" permanen (`yassardaffa1427@gmail.com`, lihat `src/lib/constants.ts`) yang bisa menonaktifkan (menurunkan role) admin lain | Diminta eksplisit oleh product owner setelah v1.0 berjalan. Admin lain tetap setara untuk mengundang admin baru — cuma kemampuan menonaktifkan yang eksklusif. |
 
 ### Belum dikerjakan
 
