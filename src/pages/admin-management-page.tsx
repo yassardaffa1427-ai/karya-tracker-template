@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { Crown, MailPlus, RefreshCw, ShieldCheck, ShieldOff, Trash2, Trophy, UserPlus } from 'lucide-react'
+import { Crown, MailPlus, RefreshCw, ShieldCheck, Trash2, Trophy, UserPlus } from 'lucide-react'
 import type { AdminInvite, AppUser } from '@/types'
 import { AppError } from '@/lib/data'
 import { formatShortDate } from '@/lib/dates'
@@ -154,7 +154,7 @@ export function AdminManagementPage() {
                         className="hover:bg-[#FEE2E2] hover:text-[#B91C1C]"
                         onClick={() => setPendingDemote(admin)}
                       >
-                        <ShieldOff className="h-4 w-4" aria-hidden />
+                        <Trash2 className="h-4 w-4" aria-hidden />
                       </Button>
                     ) : null}
                   </li>
