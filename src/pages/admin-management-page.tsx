@@ -2,15 +2,17 @@ import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { MailPlus, RefreshCw, ShieldCheck, Trash2, Trophy, UserPlus } from 'lucide-react'
-import type { AdminInvite } from '@/types'
+import { Crown, MailPlus, RefreshCw, ShieldCheck, ShieldOff, Trash2, Trophy, UserPlus } from 'lucide-react'
+import type { AdminInvite, AppUser } from '@/types'
 import { AppError } from '@/lib/data'
 import { formatShortDate } from '@/lib/dates'
+import { isPrimaryAdmin } from '@/lib/constants'
 import { inviteAdminSchema, type InviteAdminInput } from '@/lib/validators/invite'
 import { useAuth } from '@/features/auth/auth-context'
 import { useUsers } from '@/features/submissions/queries'
 import {
   useCreateInvite,
+  useDemoteAdmin,
   useInvites,
   useRecomputeLeaderboard,
   useRevokeInvite,
@@ -42,9 +44,13 @@ export function AdminManagementPage() {
   const invites = useInvites()
   const revokeMutation = useRevokeInvite()
   const recomputeMutation = useRecomputeLeaderboard(user)
+  const demoteMutation = useDemoteAdmin(user)
 
   const [inviteOpen, setInviteOpen] = useState(false)
   const [pendingRevoke, setPendingRevoke] = useState<AdminInvite | null>(null)
+  const [pendingDemote, setPendingDemote] = useState<AppUser | null>(null)
+
+  const isMePrimary = isPrimaryAdmin(user)
 
   const admins = useMemo(
     () => (users.data ?? []).filter((item) => item.role === 'admin'),
@@ -63,6 +69,18 @@ export function AdminManagementPage() {
     }
   }
 
+  async function confirmDemote() {
+    if (!pendingDemote) return
+    try {
+      await demoteMutation.mutateAsync(pendingDemote.id)
+      toast.success(`${pendingDemote.name} tidak lagi jadi admin.`)
+    } catch (error) {
+      toast.error(error instanceof AppError ? error.message : 'Gagal menonaktifkan admin.')
+    } finally {
+      setPendingDemote(null)
+    }
+  }
+
   async function handleRecompute() {
     try {
       const count = await recomputeMutation.mutateAsync()
@@ -76,7 +94,7 @@ export function AdminManagementPage() {
     <AppShell>
       <PageHeader
         title="Admin management"
-        subtitle="Semua admin punya akses yang sama — tidak ada hierarki super-admin."
+        subtitle="Semua admin bisa mengundang admin baru. Admin utama bisa menonaktifkan admin lain."
         actions={
           <Button variant="gradient" onClick={() => setInviteOpen(true)}>
             <UserPlus className="h-4 w-4" aria-hidden />
@@ -102,24 +120,46 @@ export function AdminManagementPage() {
             </div>
           ) : (
             <ul className="space-y-2">
-              {admins.map((admin) => (
-                <li
-                  key={admin.id}
-                  className="flex items-center gap-3 rounded-card border border-line px-3.5 py-3"
-                >
-                  <Avatar name={admin.name} photoUrl={admin.photoUrl} size="md" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] font-semibold text-ink">
-                      {admin.name}
-                      {admin.id === user?.id ? (
-                        <span className="ml-1.5 text-[11px] font-medium text-ink-faint">(kamu)</span>
-                      ) : null}
-                    </p>
-                    <p className="truncate text-[12px] text-ink-muted">{admin.email}</p>
-                  </div>
-                  <Badge tone="brand">Admin</Badge>
-                </li>
-              ))}
+              {admins.map((admin) => {
+                const isRowPrimary = isPrimaryAdmin(admin)
+                const canDemote = isMePrimary && !isRowPrimary && admin.id !== user?.id
+                return (
+                  <li
+                    key={admin.id}
+                    className="flex items-center gap-3 rounded-card border border-line px-3.5 py-3"
+                  >
+                    <Avatar name={admin.name} photoUrl={admin.photoUrl} size="md" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[14px] font-semibold text-ink">
+                        {admin.name}
+                        {admin.id === user?.id ? (
+                          <span className="ml-1.5 text-[11px] font-medium text-ink-faint">(kamu)</span>
+                        ) : null}
+                      </p>
+                      <p className="truncate text-[12px] text-ink-muted">{admin.email}</p>
+                    </div>
+                    {isRowPrimary ? (
+                      <Badge tone="brand">
+                        <Crown className="h-3 w-3" aria-hidden />
+                        Admin Utama
+                      </Badge>
+                    ) : (
+                      <Badge tone="brand">Admin</Badge>
+                    )}
+                    {canDemote ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Nonaktifkan admin ${admin.name}`}
+                        className="hover:bg-[#FEE2E2] hover:text-[#B91C1C]"
+                        onClick={() => setPendingDemote(admin)}
+                      >
+                        <ShieldOff className="h-4 w-4" aria-hidden />
+                      </Button>
+                    ) : null}
+                  </li>
+                )
+              })}
             </ul>
           )}
         </section>
@@ -212,6 +252,20 @@ export function AdminManagementPage() {
         confirmLabel="Cabut"
         loading={revokeMutation.isPending}
         onConfirm={confirmRevoke}
+      />
+
+      <ConfirmDialog
+        open={Boolean(pendingDemote)}
+        onOpenChange={(open) => !open && setPendingDemote(null)}
+        title="Nonaktifkan admin ini?"
+        description={
+          pendingDemote
+            ? `${pendingDemote.name} akan kehilangan akses panel admin dan kembali jadi kontributor biasa. Akunnya tetap ada — bisa diundang jadi admin lagi kapan saja.`
+            : ''
+        }
+        confirmLabel="Nonaktifkan"
+        loading={demoteMutation.isPending}
+        onConfirm={confirmDemote}
       />
     </AppShell>
   )

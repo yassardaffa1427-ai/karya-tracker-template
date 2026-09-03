@@ -4,6 +4,7 @@ import type { SubmissionInput } from '@/lib/validators/submission'
 import { AppError, ERROR_COPY, type DataAdapter } from './contract'
 import { createSeedDatabase, type MockDatabase } from './seed'
 import { buildLeaderboard } from '@/lib/selectors'
+import { isPrimaryAdmin } from '@/lib/constants'
 
 const DB_KEY = 'karya-tracker:db:v1'
 const SESSION_KEY = 'karya-tracker:session:v1'
@@ -290,6 +291,18 @@ export class MockAdapter implements DataAdapter {
     await wait()
     const db = this.db
     db.invites = db.invites.filter((item) => item.id !== inviteId)
+    writeDatabase(db)
+  }
+
+  async demoteAdmin(actor: AppUser, targetUserId: string) {
+    await wait()
+    if (!isPrimaryAdmin(actor) || targetUserId === actor.id) {
+      throw new AppError('permission-denied', ERROR_COPY['permission-denied'])
+    }
+    const db = this.db
+    const target = db.users.find((item) => item.id === targetUserId)
+    if (!target) throw new AppError('not-found', ERROR_COPY['not-found'])
+    target.role = 'user'
     writeDatabase(db)
   }
 }

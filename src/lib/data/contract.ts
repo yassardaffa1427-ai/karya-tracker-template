@@ -104,4 +104,11 @@ export interface DataAdapter {
   listInvites(): Promise<AdminInvite[]>
   createInvite(actor: AppUser, email: string): Promise<AdminInvite>
   revokeInvite(inviteId: string): Promise<void>
+
+  /**
+   * Turunkan admin lain balik jadi user biasa. Hanya boleh dipanggil oleh admin utama
+   * (lihat PRIMARY_ADMIN_EMAIL di src/lib/constants.ts) dan tidak boleh menargetkan diri
+   * sendiri — akunnya tetap ada, cuma kehilangan akses panel admin.
+   */
+  demoteAdmin(actor: AppUser, targetUserId: string): Promise<void>
 }

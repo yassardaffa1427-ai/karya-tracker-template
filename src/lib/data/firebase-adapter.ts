@@ -38,6 +38,7 @@ import { addDays, formatISO } from 'date-fns'
 import type { AdminInvite, AppUser, LeaderboardEntry, Submission } from '@/types'
 import type { SubmissionInput } from '@/lib/validators/submission'
 import { buildLeaderboard } from '@/lib/selectors'
+import { isPrimaryAdmin } from '@/lib/constants'
 import { AppError, ERROR_COPY, toAppError, type DataAdapter } from './contract'
 import { firebaseConfig } from './config'
 
@@ -436,5 +437,19 @@ export class FirebaseAdapter implements DataAdapter {
 
   async revokeInvite(inviteId: string) {
     await deleteDoc(doc(this.db, INVITES, inviteId))
+  }
+
+  async demoteAdmin(actor: AppUser, targetUserId: string) {
+    if (!isPrimaryAdmin(actor)) {
+      throw new AppError('permission-denied', ERROR_COPY['permission-denied'])
+    }
+    if (targetUserId === actor.id) {
+      throw new AppError('permission-denied', ERROR_COPY['permission-denied'])
+    }
+    try {
+      await updateDoc(doc(this.db, USERS, targetUserId), { role: 'user' })
+    } catch (error) {
+      throw toAppError(error)
+    }
   }
 }

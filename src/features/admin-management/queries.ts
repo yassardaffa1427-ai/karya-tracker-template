@@ -32,6 +32,14 @@ export function useRevokeInvite() {
   })
 }
 
+export function useDemoteAdmin(actor: AppUser | null) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (targetUserId: string) => getAdapter().demoteAdmin(actor as AppUser, targetUserId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.users }),
+  })
+}
+
 /**
  * Backfill satu kali untuk submission yang dibuat sebelum totalKarya mulai dijaga
  * otomatis (lihat createSubmission/deleteSubmission di firebase-adapter.ts).

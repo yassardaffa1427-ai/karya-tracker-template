@@ -24,6 +24,14 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // Admin utama — satu-satunya yang boleh menonaktifkan (menurunkan role) admin lain.
+    // Permanen & hardcode by email, sesuai keputusan produk (bukan hierarki umum,
+    // cuma satu akun khusus). Samakan dengan PRIMARY_ADMIN_EMAIL di src/lib/constants.ts
+    // kalau ini pernah diubah.
+    function isPrimaryAdmin() {
+      return isAdmin() && request.auth.token.email.lower() == 'yassardaffa1427@gmail.com';
+    }
+
     // Dipakai supaya orang yang diundang bisa membaca/menerima undangan
     // miliknya sendiri lewat email, tanpa perlu jadi admin dulu.
     function isInvitedSelf(invitedEmail) {
@@ -50,10 +58,16 @@ service cloud.firestore {
       // (b) mengoreksi totalKarya/origin/lastReachedAt user LAIN — dipakai saat admin
       // menghapus submission milik orang lain, dan saat "Recompute leaderboard"
       // (backfill agregat untuk submission yang dibuat sebelum totalKarya ada).
+      // Admin utama boleh menurunkan admin LAIN (bukan dirinya sendiri) balik jadi user.
       allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role)
         || (isAdmin()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
           && request.resource.data.role == 'admin')
+        || (isPrimaryAdmin()
+          && userId != request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+          && resource.data.role == 'admin'
+          && request.resource.data.role == 'user')
         || (isAdmin()
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['totalKarya', 'origin', 'lastReachedAt']));
