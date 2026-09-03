@@ -28,7 +28,7 @@ export function ProfilePage() {
 
   return (
     <AppShell>
-      <PageHeader title="Profil & akun" subtitle="Informasi akun kamu di Karya Tracker." />
+      <PageHeader title="Profil & akun" subtitle="Informasi akun kamu di vilism.checker." />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="fin-card p-6">

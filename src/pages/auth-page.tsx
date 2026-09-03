@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { CalendarCheck2, KeyRound, Sparkles, Trophy, Users } from 'lucide-react'
+import { CalendarCheck2, KeyRound, Trophy, Users } from 'lucide-react'
+import logo from '@/assets/logo.jpg'
 import { AppError, DEMO_ACCOUNTS, isMockMode } from '@/lib/data'
 import { useAuth } from '@/features/auth/auth-context'
 import { loginSchema, registerSchema, resetSchema, type LoginInput, type RegisterInput, type ResetInput } from '@/lib/validators/auth'
@@ -35,11 +36,9 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
         />
 
         <div className="relative flex items-center gap-2.5">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white">
-            <Sparkles className="h-4 w-4" aria-hidden />
-          </span>
+          <img src={logo} alt="" className="h-9 w-9 rounded-xl object-cover" />
           <span className="text-[16px] font-bold tracking-tight text-white">
-            Karya<span className="text-brand-400">Tracker</span>
+            vilism<span className="text-brand-400">.checker</span>
           </span>
         </div>
 
@@ -72,7 +71,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
           </ul>
         </div>
 
-        <p className="relative text-[12px] text-slate-500">Karya Tracker v1.0 — Production</p>
+        <p className="relative text-[12px] text-slate-500">vilism.checker v1.0 — Production</p>
       </section>
 
       <section className="flex flex-col items-center justify-center bg-surface px-5 py-12 sm:px-10">
@@ -89,11 +88,9 @@ function AuthHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <header className="mb-6 space-y-1.5">
       <div className="mb-5 flex items-center gap-2.5 lg:hidden">
-        <span className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white">
-          <Sparkles className="h-4 w-4" aria-hidden />
-        </span>
+        <img src={logo} alt="" className="h-8 w-8 rounded-xl object-cover" />
         <span className="text-[15px] font-bold tracking-tight text-ink">
-          Karya<span className="text-brand-600">Tracker</span>
+          vilism<span className="text-brand-600">.checker</span>
         </span>
       </div>
       <h2 className="text-[28px] font-bold leading-9 tracking-tight text-ink">{title}</h2>

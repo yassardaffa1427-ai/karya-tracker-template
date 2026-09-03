@@ -8,11 +8,11 @@ import {
   Menu,
   PlusCircle,
   Shield,
-  Sparkles,
   Trophy,
   Users,
   X,
 } from 'lucide-react'
+import logo from '@/assets/logo.jpg'
 import { useAuth } from '@/features/auth/auth-context'
 import {
   markAllNotificationsRead,
@@ -60,15 +60,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-surface">
+    <div className="min-h-screen bg-surface">
       <header className="sticky top-0 z-30 bg-surface/85 px-3 pb-3 pt-3 backdrop-blur-sm sm:px-6 sm:pb-4 sm:pt-5">
         <div className="dark-scope mx-auto flex max-w-[1320px] items-center gap-3 rounded-full bg-darkbg-main px-3 py-2.5 shadow-dark-panel sm:px-4">
           <div className="flex items-center gap-2.5 pl-1 pr-2">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white">
-              <Sparkles className="h-4 w-4" aria-hidden />
-            </span>
+            <img src={logo} alt="" className="h-8 w-8 rounded-xl object-cover" />
             <span className="hidden text-[15px] font-bold tracking-tight text-white sm:block">
-              Karya<span className="text-brand-400">Tracker</span>
+              vilism<span className="text-brand-400">.checker</span>
             </span>
           </div>
 
@@ -235,7 +233,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      <main className="mx-auto max-w-[1320px] px-3 pb-24 pt-3 sm:px-6 sm:pb-16">
+      <main className="mx-auto max-w-[1320px] overflow-x-hidden px-3 pb-24 pt-3 sm:px-6 sm:pb-16">
         {children}
         <Footer />
       </main>

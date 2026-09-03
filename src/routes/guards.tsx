@@ -7,7 +7,7 @@ function FullScreenLoader() {
     <div className="grid min-h-screen place-items-center bg-surface">
       <div className="flex flex-col items-center gap-3 text-ink-muted">
         <Loader2 className="h-6 w-6 animate-spin text-brand-600" aria-hidden />
-        <p className="text-[13px]">Menyiapkan Karya Tracker…</p>
+        <p className="text-[13px]">Menyiapkan vilism.checker…</p>
       </div>
     </div>
   )
