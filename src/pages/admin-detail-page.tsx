@@ -210,7 +210,7 @@ export function AdminDetailPage() {
               )}
             </div>
 
-            <aside className="rounded-card bg-darkbg-panel p-5 shadow-dark-panel">
+            <aside className="min-w-0 rounded-card bg-darkbg-panel p-5 shadow-dark-panel">
               {selected ? (
                 <div className="flex h-full flex-col">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">

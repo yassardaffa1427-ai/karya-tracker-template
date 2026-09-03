@@ -59,7 +59,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen overflow-x-hidden bg-surface">
       <header className="sticky top-0 z-30 bg-surface/85 px-3 pb-3 pt-3 backdrop-blur-sm sm:px-6 sm:pb-4 sm:pt-5">
         <div className="dark-scope mx-auto flex max-w-[1320px] items-center gap-3 rounded-full bg-darkbg-main px-3 py-2.5 shadow-dark-panel sm:px-4">
           <div className="flex items-center gap-2.5 pl-1 pr-2">

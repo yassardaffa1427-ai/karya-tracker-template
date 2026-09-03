@@ -151,7 +151,7 @@ export function UserDashboard() {
       </section>
 
       <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           {mine.isError ? (
             <ErrorState
               message={mine.error instanceof Error ? mine.error.message : 'Tidak diketahui'}
@@ -217,7 +217,7 @@ export function UserDashboard() {
           </section>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <section className="fin-card p-5">
             <header className="mb-4 flex items-center justify-between gap-3">
               <div>
