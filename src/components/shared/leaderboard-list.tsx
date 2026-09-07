@@ -12,6 +12,8 @@ interface LeaderboardListProps {
   highlightUserId?: string
   limit?: number
   onDark?: boolean
+  emptyTitle?: string
+  emptyDescription?: string
 }
 
 export function LeaderboardList({
@@ -20,6 +22,8 @@ export function LeaderboardList({
   highlightUserId,
   limit,
   onDark,
+  emptyTitle,
+  emptyDescription,
 }: LeaderboardListProps) {
   if (loading) {
     return (
@@ -40,8 +44,8 @@ export function LeaderboardList({
       <EmptyState
         icon={Trophy}
         onDark={onDark}
-        title="Leaderboard masih kosong"
-        description="Belum ada satu pun karya yang masuk. Ranking akan muncul setelah kontributor pertama submit."
+        title={emptyTitle ?? "Leaderboard masih kosong"}
+        description={emptyDescription ?? "Belum ada satu pun karya yang masuk. Ranking akan muncul setelah kontributor pertama submit."}
       />
     )
   }
